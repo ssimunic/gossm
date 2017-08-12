@@ -61,13 +61,19 @@ func (c *Config) validate() {
 		panic("no servers found in config")
 	}
 
-	if c.Settings.Monitor.CheckInterval == 0 || c.Settings.Monitor.MaxConnections == 0 || c.Settings.Monitor.Timeout == 0 {
+	if c.Settings.Monitor.CheckInterval <= 0 || c.Settings.Monitor.MaxConnections <= 0 || c.Settings.Monitor.Timeout <= 0 {
 		panic("monitor settings missing")
 	}
 
 	for _, server := range c.Servers {
 		if server.Name == "" || server.IPAddress == "" || server.Port == 0 || server.Protocol == "" {
 			panic(fmt.Sprintf("invalid data for server: %#v", server))
+		}
+		if server.CheckInterval == 0 {
+			server.CheckInterval = c.Settings.Monitor.CheckInterval
+		}
+		if server.Timeout == 0 {
+			server.Timeout = c.Settings.Monitor.Timeout
 		}
 	}
 }
