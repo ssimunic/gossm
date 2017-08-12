@@ -1,0 +1,44 @@
+{
+    "settings": {
+        "notifications": {
+            "email": {
+                    "smtp": "smtp.google.com",
+                    "port": 587,
+                    "username": "silvio.simunic@gmail.com",
+                    "password": null
+            },
+            "sms": {}       
+        },
+        "monitor": {
+            "checkInterval": 5,
+            "timeout": 5,
+            "maxConnections": 1
+        }
+    },
+    "servers": [
+        {
+            "name":"Local Webserver 1",
+            "ipAddress":"192.168.20.168",
+            "port": 80,
+            "protocol": "tcp",
+            "checkInterval": 5,
+            "timeout": 5
+        },
+        {
+            "name":"Test server 1",
+            "ipAddress":"162.243.10.151",
+            "port": 80,
+            "protocol": "tcp",
+            "checkInterval": 5,
+            "timeout": 5
+        },
+        {
+            "name":"Test server 2",
+            "ipAddress":"162.243.10.151",
+            "port": 8080,
+            "protocol": "tcp",
+            "checkInterval": 5,
+            "timeout": 5
+        }
+    ]
+}
