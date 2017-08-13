@@ -1,13 +1,15 @@
 {
     "settings": {
         "notifications": {
-            "email": {
+            "email": [
+                {
                     "smtp": "smtp.google.com",
                     "port": 587,
                     "username": "silvio.simunic@gmail.com",
-                    "password": null
-            },
-            "sms": {}       
+                    "password": "..."
+                }
+            ],
+            "sms": [{"sms": "todo"}]     
         },
         "monitor": {
             "checkInterval": 5,

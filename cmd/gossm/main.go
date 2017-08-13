@@ -6,10 +6,13 @@ import (
 
 	"github.com/ssimunic/gossm"
 	"github.com/ssimunic/gossm/config"
+	"github.com/ssimunic/gossm/logger"
 )
 
 var configPath = flag.String("config", "config.json", "configuration file")
 var logPath = flag.String("log", "log.txt", "log file")
+var address = flag.String("http", ":8080", "address for http server")
+var nolog = flag.Bool("nolog", false, "disable logging to file")
 
 func main() {
 	flag.Parse()
@@ -18,7 +21,11 @@ func main() {
 		panic("error reading from configuration file")
 	}
 
+	if *nolog == true {
+		logger.Disable()
+	}
 	config := config.New(jsonData)
 	monitor := gossm.NewMonitor(config)
+	go gossm.RunHttp(*address)
 	monitor.Run()
 }
