@@ -20,19 +20,3 @@ func NewConfig(jsonData []byte) *Config {
 	config.validate()
 	return config
 }
-
-func (n *NotificationSettings) GetNotifiers() (notifiers []Notifier) {
-	for _, email := range n.Email {
-		if email.isValid() {
-			emailNotifier := &EmailNotifier{settings: &email}
-			notifiers = append(notifiers, emailNotifier)
-		}
-	}
-	for _, sms := range n.Sms {
-		if sms.isValid() {
-			smsNotifier := &SmsNotifier{settings: &sms}
-			notifiers = append(notifiers, smsNotifier)
-		}
-	}
-	return
-}

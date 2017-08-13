@@ -45,6 +45,11 @@ func (m *Monitor) RunForSeconds(runningSeconds int) {
 	}
 
 	logger.Logln("Starting monitor.")
+	for _, notifier := range m.notifiers {
+		if initializer, ok := notifier.(Initializer); ok {
+			initializer.Initialize()
+		}
+	}
 	for _, server := range m.config.Servers {
 		server := Server(server)
 		go m.handleServer(&server)
@@ -64,7 +69,7 @@ func (m *Monitor) monitor() {
 	go m.listenServers()
 	go m.listenNotifiers()
 	<-m.stop
-	logger.Log("Terminating.")
+	logger.Logln("Terminating.")
 	os.Exit(0)
 }
 
@@ -82,9 +87,7 @@ func (m *Monitor) listenServers() {
 func (m *Monitor) listenNotifiers() {
 	for {
 		server := <-m.notifier
-		go func() {
-			m.notifiers.NotifyAll(server.String())
-		}()
+		go m.notifiers.NotifyAll(server.String())
 	}
 }
 

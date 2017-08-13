@@ -20,7 +20,7 @@ func (c *Config) validateSettings() {
 	// validate email notifications
 	for _, email := range c.Settings.Notifications.Email {
 		if email == (EmailSettings{}) {
-			logger.Log("No email notification settings found.")
+			logger.Logln("No email notification settings found.")
 		} else {
 			if !email.isValid() {
 				panic("invalid email settings")
@@ -31,9 +31,9 @@ func (c *Config) validateSettings() {
 	// validate sms notifications
 	for _, sms := range c.Settings.Notifications.Sms {
 		if sms == (SmsSettings{}) {
-			logger.Log("No SMS notification settings found.")
+			logger.Logln("No SMS notification settings found.")
 		} else {
-			// TODO: add sms notifications
+			// TODO: add sms validation
 		}
 	}
 }
@@ -65,5 +65,5 @@ func (e *EmailSettings) isValid() bool {
 
 func (s *SmsSettings) isValid() bool {
 	// TODO: add sms
-	return true
+	return false
 }

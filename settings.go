@@ -26,3 +26,21 @@ type EmailSettings struct {
 type SmsSettings struct {
 	Sms string `json:"sms"`
 }
+
+func (n *NotificationSettings) GetNotifiers() (notifiers []Notifier) {
+	for _, email := range n.Email {
+		email := email
+		if email.isValid() {
+			emailNotifier := &EmailNotifier{settings: &email}
+			notifiers = append(notifiers, emailNotifier)
+		}
+	}
+	for _, sms := range n.Sms {
+		sms := sms
+		if sms.isValid() {
+			smsNotifier := &SmsNotifier{settings: &sms}
+			notifiers = append(notifiers, smsNotifier)
+		}
+	}
+	return
+}
