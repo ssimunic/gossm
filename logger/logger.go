@@ -9,13 +9,18 @@ import (
 )
 
 var (
-	logFilename = "log.txt"
-	mu          sync.Mutex
+	enabledFileLog = true
+	logFilename    = "log.txt"
+	mu             sync.Mutex
 )
 
 // Log writes text to standard output and file
 func Log(text string) {
 	log.Print(text)
+
+	if !enabledFileLog {
+		return
+	}
 	mu.Lock()
 	defer mu.Unlock()
 	if err := writeToFile(logFilename, text); err != nil {
@@ -36,6 +41,16 @@ func Logf(format string, v ...interface{}) {
 // SetFilename updates filename in which logs will be saved
 func SetFilename(fileName string) {
 	logFilename = fileName
+}
+
+// Disable logging to file
+func Disable() {
+	enabledFileLog = false
+}
+
+// Enable logging to file
+func Enable() {
+	enabledFileLog = true
 }
 
 // writeToFile writes text to fileName, creates new one if it doesn't exist

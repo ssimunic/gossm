@@ -6,23 +6,26 @@ import (
 	"os"
 	"time"
 
-	"github.com/ssimunic/gossm/config"
 	"github.com/ssimunic/gossm/logger"
 )
 
 type Monitor struct {
-	config    *config.Config
-	pipe      chan *Server
+	config    *Config
+	checker   chan *Server
+	notifiers Notifiers
+	notifier  chan *Server
+	// Used to regulate number of concurrent connections
 	semaphore chan struct{}
-	stop      chan struct{}
+	// Exit on receive
+	stop chan struct{}
 }
 
-type Server config.Server
-
-func NewMonitor(c *config.Config) *Monitor {
+func NewMonitor(c *Config) *Monitor {
 	return &Monitor{
 		config:    c,
-		pipe:      make(chan *Server),
+		checker:   make(chan *Server),
+		notifiers: c.Settings.Notifications.GetNotifiers(),
+		notifier:  make(chan *Server),
 		semaphore: make(chan struct{}, c.Settings.Monitor.MaxConnections),
 		stop:      make(chan struct{}),
 	}
@@ -53,46 +56,51 @@ func (m *Monitor) handleServer(s *Server) {
 	tickerSeconds := time.NewTicker(time.Duration(s.CheckInterval) * time.Second)
 
 	for range tickerSeconds.C {
-		m.pipe <- s
+		m.checker <- s
 	}
 }
 
 func (m *Monitor) monitor() {
+	go m.listenServers()
+	go m.listenNotifiers()
+	<-m.stop
+	logger.Log("Terminating.")
+	os.Exit(0)
+}
+
+func (m *Monitor) listenServers() {
 	for {
-		select {
-		case server := <-m.pipe:
+		server := <-m.checker
+		go func() {
 			m.semaphore <- struct{}{}
-			go func() {
-				server.checkStatus()
-				<-m.semaphore
-			}()
-		case <-m.stop:
-			logger.Log("Terminating.")
-			os.Exit(0)
-		}
+			m.checkServerStatus(server)
+			<-m.semaphore
+		}()
 	}
 }
 
-func (s *Server) checkStatus() {
-	logger.Logln("Checking", s)
-	formattedAddress := fmt.Sprintf("%s:%d", s.IPAddress, s.Port)
-	timeoutSeconds := time.Duration(s.Timeout) * time.Second
-	conn, err := net.DialTimeout(s.Protocol, formattedAddress, timeoutSeconds)
+func (m *Monitor) listenNotifiers() {
+	for {
+		server := <-m.notifier
+		go func() {
+			m.notifiers.NotifyAll(server.String())
+		}()
+	}
+}
+
+func (m *Monitor) checkServerStatus(server *Server) {
+	logger.Logln("Checking", server)
+	formattedAddress := fmt.Sprintf("%s:%d", server.IPAddress, server.Port)
+	timeoutSeconds := time.Duration(server.Timeout) * time.Second
+	conn, err := net.DialTimeout(server.Protocol, formattedAddress, timeoutSeconds)
 	if err != nil {
 		logger.Logln(err)
-		logger.Logln("ERROR", s)
-		go s.handleFailure()
+		logger.Logln("ERROR", server)
+		go func() {
+			m.notifier <- server
+		}()
 		return
 	}
 	defer conn.Close()
-	logger.Logln("OK", s)
-}
-
-func (s *Server) handleFailure() {
-	logger.Logln("Sending notification for", s)
-	// TODO: Send notifications
-}
-
-func (s *Server) String() string {
-	return fmt.Sprintf("%s %s:%d", s.Protocol, s.IPAddress, s.Port)
+	logger.Logln("OK", server)
 }

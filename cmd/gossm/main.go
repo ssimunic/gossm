@@ -5,7 +5,6 @@ import (
 	"io/ioutil"
 
 	"github.com/ssimunic/gossm"
-	"github.com/ssimunic/gossm/config"
 	"github.com/ssimunic/gossm/logger"
 )
 
@@ -24,7 +23,7 @@ func main() {
 	if *nolog == true {
 		logger.Disable()
 	}
-	config := config.New(jsonData)
+	config := gossm.NewConfig(jsonData)
 	monitor := gossm.NewMonitor(config)
 	go gossm.RunHttp(*address)
 	monitor.Run()

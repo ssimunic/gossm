@@ -13,6 +13,7 @@
 # Project-local glide cache, RE: https://github.com/Masterminds/glide/issues/736
 .glide/
 
-# GOSSM Binaries
+# GOSSM
 cmd/gossm/gossm
 cmd/gossm/log.txt
+cmd/gossm/myconfig.json
