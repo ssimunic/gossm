@@ -9,7 +9,7 @@ type Config struct {
 	Settings Settings `json:"settings"`
 }
 
-// New returns pointer to Config which is created from provided JSON data.
+// NewConfig returns pointer to Config which is created from provided JSON data.
 // Guarantees to be validated.
 func NewConfig(jsonData []byte) *Config {
 	config := &Config{}
