@@ -88,6 +88,8 @@ func (m *Monitor) scheduleServer(s *Server) {
 func (m *Monitor) monitor() {
 	go m.listenForChecks()
 	go m.listenForNotifications()
+
+	// Wait for termination signal then exit monitor
 	<-m.stop
 	logger.Logln("Terminating.")
 	os.Exit(0)

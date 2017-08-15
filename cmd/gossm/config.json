@@ -3,13 +3,21 @@
         "notifications": {
             "email": [
                 {
-                    "smtp": "smtp.google.com",
+                    "smtp": "smtp.gmail.com",
                     "port": 587,
                     "username": "silvio.simunic@gmail.com",
-                    "password": "..."
+                    "password": "...",
+                    "from": "silvio.simunic@gmail.com",
+                    "to": [
+                        "silvio.simunic@gmail.com"
+                    ]
                 }
             ],
-            "sms": [{"sms": "todo"}]     
+            "sms": [
+                {
+                    "sms": "todo"
+                }
+            ]     
         },
         "monitor": {
             "checkInterval": 5,

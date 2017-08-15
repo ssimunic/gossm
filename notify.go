@@ -3,16 +3,17 @@ package gossm
 import (
 	"fmt"
 	"net/smtp"
+	"strings"
 
 	"github.com/ssimunic/gossm/logger"
 )
 
-type Notifier interface {
-	Notify(text string)
-}
-
 type Initializer interface {
 	Initialize()
+}
+
+type Notifier interface {
+	Notify(text string)
 }
 
 type Notifiers []Notifier
@@ -32,25 +33,6 @@ func (notifiers Notifiers) NotifyAll(text string) {
 	}
 }
 
-func (e *EmailNotifier) Notify(text string) {
-	msg := "From: " + e.settings.Username + "\n" +
-		"To: " + e.settings.Username + "\n" +
-		"Subject: GOSSM Notification\n\n" +
-		text + " not reached."
-
-	logger.Logln("Sending email notification:", text)
-	err := smtp.SendMail(
-		fmt.Sprintf("%s:%d", e.settings.SMTP, e.settings.Port),
-		e.auth,
-		e.settings.Username,
-		[]string{e.settings.Username},
-		[]byte(msg),
-	)
-	if err != nil {
-		logger.Logln(err)
-	}
-}
-
 func (e *EmailNotifier) Initialize() {
 	logger.Logln("Authenticating", e.settings.Username)
 	e.auth = smtp.PlainAuth(
@@ -59,6 +41,26 @@ func (e *EmailNotifier) Initialize() {
 		e.settings.Password,
 		e.settings.SMTP,
 	)
+}
+
+func (e *EmailNotifier) Notify(text string) {
+	formattedReceipets := strings.Join(e.settings.To, ", ")
+	msg := "From: " + e.settings.From + "\n" +
+		"To: " + formattedReceipets + "\n" +
+		"Subject: GOSSM Notification\n\n" +
+		text + " not reached."
+
+	logger.Logln("Sending email notification:", text)
+	err := smtp.SendMail(
+		fmt.Sprintf("%s:%d", e.settings.SMTP, e.settings.Port),
+		e.auth,
+		e.settings.From,
+		e.settings.To,
+		[]byte(msg),
+	)
+	if err != nil {
+		logger.Logln(err)
+	}
 }
 
 func (s *SmsNotifier) Notify(text string) {

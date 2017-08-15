@@ -12,15 +12,17 @@ type MonitorSettings struct {
 }
 
 type NotificationSettings struct {
-	Email []EmailSettings `json:"email"`
-	Sms   []SmsSettings   `json:"sms"`
+	Email []*EmailSettings `json:"email"`
+	Sms   []*SmsSettings   `json:"sms"`
 }
 
 type EmailSettings struct {
-	SMTP     string `json:"smtp"`
-	Port     int    `json:"port"`
-	Username string `json:"username"`
-	Password string `json:"password"`
+	SMTP     string   `json:"smtp"`
+	Port     int      `json:"port"`
+	Username string   `json:"username"`
+	Password string   `json:"password"`
+	From     string   `json:"from"`
+	To       []string `json:"to"`
 }
 
 type SmsSettings struct {
@@ -29,13 +31,11 @@ type SmsSettings struct {
 
 func (n *NotificationSettings) GetNotifiers() (notifiers []Notifier) {
 	for _, email := range n.Email {
-		email := email
-		emailNotifier := &EmailNotifier{settings: &email}
+		emailNotifier := &EmailNotifier{settings: email}
 		notifiers = append(notifiers, emailNotifier)
 	}
 	for _, sms := range n.Sms {
-		sms := sms
-		smsNotifier := &SmsNotifier{settings: &sms}
+		smsNotifier := &SmsNotifier{settings: sms}
 		notifiers = append(notifiers, smsNotifier)
 	}
 	return
