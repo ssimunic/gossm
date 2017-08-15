@@ -44,19 +44,30 @@ func (m *Monitor) RunForSeconds(runningSeconds int) {
 		}()
 	}
 
-	logger.Logln("Starting monitor.")
 	for _, notifier := range m.notifiers {
 		if initializer, ok := notifier.(Initializer); ok {
 			initializer.Initialize()
 		}
 	}
+	m.prepareServers()
 	for _, server := range m.config.Servers {
-		server := Server(server)
-		go m.handleServer(&server)
+		go m.handleServer(server)
 	}
+
+	logger.Logln("Starting monitor.")
 	m.monitor()
 }
 
+func (m *Monitor) prepareServers() {
+	for _, server := range m.config.Servers {
+		switch {
+		case server.CheckInterval <= 0:
+			server.CheckInterval = m.config.Settings.Monitor.CheckInterval
+		case server.Timeout <= 0:
+			server.CheckInterval = m.config.Settings.Monitor.Timeout
+		}
+	}
+}
 func (m *Monitor) handleServer(s *Server) {
 	tickerSeconds := time.NewTicker(time.Duration(s.CheckInterval) * time.Second)
 

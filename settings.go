@@ -1,8 +1,8 @@
 package gossm
 
 type Settings struct {
-	Monitor       MonitorSettings
-	Notifications NotificationSettings
+	Monitor       *MonitorSettings
+	Notifications *NotificationSettings
 }
 
 type MonitorSettings struct {
@@ -30,17 +30,13 @@ type SmsSettings struct {
 func (n *NotificationSettings) GetNotifiers() (notifiers []Notifier) {
 	for _, email := range n.Email {
 		email := email
-		if email.isValid() {
-			emailNotifier := &EmailNotifier{settings: &email}
-			notifiers = append(notifiers, emailNotifier)
-		}
+		emailNotifier := &EmailNotifier{settings: &email}
+		notifiers = append(notifiers, emailNotifier)
 	}
 	for _, sms := range n.Sms {
 		sms := sms
-		if sms.isValid() {
-			smsNotifier := &SmsNotifier{settings: &sms}
-			notifiers = append(notifiers, smsNotifier)
-		}
+		smsNotifier := &SmsNotifier{settings: &sms}
+		notifiers = append(notifiers, smsNotifier)
 	}
 	return
 }

@@ -2,68 +2,75 @@ package gossm
 
 import (
 	"fmt"
-
-	"github.com/ssimunic/gossm/logger"
 )
 
-func (c *Config) validate() {
-	c.validateSettings()
-	c.validateServers()
+// Validator is used to validate fields of config structure
+type Validator interface {
+	// Validate returns <true, nil> if valid, <false, error> if invalid
+	Validate() (bool, error)
 }
 
-func (c *Config) validateSettings() {
-	// validate monitor settings
-	if c.Settings.Monitor.CheckInterval <= 0 || c.Settings.Monitor.MaxConnections <= 0 || c.Settings.Monitor.Timeout <= 0 {
-		panic("monitor settings missing")
+func (c *Config) Validate() (bool, error) {
+	if ok, err := c.Settings.Validate(); !ok {
+		return false, fmt.Errorf("invalid settings: %v", err)
 	}
-
-	// validate email notifications
-	for _, email := range c.Settings.Notifications.Email {
-		if email == (EmailSettings{}) {
-			logger.Logln("No email notification settings found.")
-		} else {
-			if !email.isValid() {
-				panic("invalid email settings")
-			}
-		}
+	if ok, err := c.Servers.Validate(); !ok {
+		return false, fmt.Errorf("invalid servers: %v", err)
 	}
-
-	// validate sms notifications
-	for _, sms := range c.Settings.Notifications.Sms {
-		if sms == (SmsSettings{}) {
-			logger.Logln("No SMS notification settings found.")
-		} else {
-			// TODO: add sms validation
-		}
-	}
+	return true, nil
 }
 
-func (c *Config) validateServers() {
-	if len(c.Servers) == 0 {
-		panic("no servers found in config")
+func (s *Settings) Validate() (bool, error) {
+	if ok, err := s.Monitor.Validate(); !ok {
+		return false, fmt.Errorf("invalid monitor settings: %v", err)
 	}
+	if ok, err := s.Notifications.Validate(); !ok {
+		return false, fmt.Errorf("invalid notification settings: %v", err)
+	}
+	return true, nil
+}
 
-	for _, server := range c.Servers {
+func (ms *MonitorSettings) Validate() (bool, error) {
+	if ms.CheckInterval <= 0 || ms.MaxConnections <= 0 || ms.Timeout <= 0 {
+		return false, fmt.Errorf("monitor settings missing")
+	}
+	return true, nil
+}
+
+func (ns *NotificationSettings) Validate() (bool, error) {
+	for _, email := range ns.Email {
+		if ok, err := email.Validate(); !ok {
+			return false, err
+		}
+	}
+	for _, sms := range ns.Sms {
+		if ok, err := sms.Validate(); !ok {
+			return false, err
+		}
+	}
+	return true, nil
+}
+
+func (es *EmailSettings) Validate() (bool, error) {
+	if es.Password == "" || es.Username == "" || es.SMTP == "" || es.Port == 0 {
+		return false, fmt.Errorf("missing email settings")
+	}
+	return true, nil
+}
+
+func (ss *SmsSettings) Validate() (bool, error) {
+	// TODO
+	return true, nil
+}
+
+func (s *Servers) Validate() (bool, error) {
+	if len(*s) == 0 {
+		return true, fmt.Errorf("no servers found in config")
+	}
+	for _, server := range *s {
 		if server.Name == "" || server.IPAddress == "" || server.Port == 0 || server.Protocol == "" {
-			panic(fmt.Sprintf("invalid data for server: %#v", server))
-		}
-		if server.CheckInterval == 0 {
-			server.CheckInterval = c.Settings.Monitor.CheckInterval
-		}
-		if server.Timeout == 0 {
-			server.Timeout = c.Settings.Monitor.Timeout
+			return true, fmt.Errorf("missing data for server: %#v", server)
 		}
 	}
-}
-
-func (e *EmailSettings) isValid() bool {
-	if e.Password == "" || e.Username == "" || e.SMTP == "" || e.Port == 0 {
-		return false
-	}
-	return true
-}
-
-func (s *SmsSettings) isValid() bool {
-	// TODO: add sms
-	return false
+	return true, nil
 }

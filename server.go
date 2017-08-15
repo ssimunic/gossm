@@ -4,7 +4,7 @@ import (
 	"fmt"
 )
 
-type Servers []Server
+type Servers []*Server
 
 type Server struct {
 	Name          string `json:"name"`
