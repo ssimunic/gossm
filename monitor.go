@@ -10,13 +10,17 @@ import (
 )
 
 type Monitor struct {
-	config    *Config
-	checker   chan *Server
+	// Holds settings and servers
+	config *Config
+	// Channel used to schedule checks for servers
+	checker chan *Server
+	// Notification methods used to send messages when server can't be reached
 	notifiers Notifiers
-	notifier  chan *Server
+	// Channel used for receive servers that couldn't be reached
+	notifier chan *Server
 	// Used to regulate number of concurrent connections
 	semaphore chan struct{}
-	// Exit on receive
+	// Sending to stop channel makes program exit
 	stop chan struct{}
 }
 
@@ -35,6 +39,7 @@ func (m *Monitor) Run() {
 	m.RunForSeconds(0)
 }
 
+// RunForSeconds runs monitor for runningSeconds seconds or infinitely if 0 is passed as an argument
 func (m *Monitor) RunForSeconds(runningSeconds int) {
 	if runningSeconds != 0 {
 		go func() {
@@ -44,31 +49,35 @@ func (m *Monitor) RunForSeconds(runningSeconds int) {
 		}()
 	}
 
+	// Initialize notification methods to reduce overhead
 	for _, notifier := range m.notifiers {
 		if initializer, ok := notifier.(Initializer); ok {
 			initializer.Initialize()
 		}
 	}
+
 	m.prepareServers()
+
 	for _, server := range m.config.Servers {
-		go m.handleServer(server)
+		go m.scheduleServer(server)
 	}
 
 	logger.Logln("Starting monitor.")
 	m.monitor()
 }
 
+// prepareServers sets default CheckInterval and Timeout for each Server if they are not set
 func (m *Monitor) prepareServers() {
 	for _, server := range m.config.Servers {
 		switch {
 		case server.CheckInterval <= 0:
 			server.CheckInterval = m.config.Settings.Monitor.CheckInterval
 		case server.Timeout <= 0:
-			server.CheckInterval = m.config.Settings.Monitor.Timeout
+			server.Timeout = m.config.Settings.Monitor.Timeout
 		}
 	}
 }
-func (m *Monitor) handleServer(s *Server) {
+func (m *Monitor) scheduleServer(s *Server) {
 	tickerSeconds := time.NewTicker(time.Duration(s.CheckInterval) * time.Second)
 
 	for range tickerSeconds.C {
@@ -77,14 +86,14 @@ func (m *Monitor) handleServer(s *Server) {
 }
 
 func (m *Monitor) monitor() {
-	go m.listenServers()
-	go m.listenNotifiers()
+	go m.listenForChecks()
+	go m.listenForNotifications()
 	<-m.stop
 	logger.Logln("Terminating.")
 	os.Exit(0)
 }
 
-func (m *Monitor) listenServers() {
+func (m *Monitor) listenForChecks() {
 	for {
 		server := <-m.checker
 		go func() {
@@ -95,7 +104,7 @@ func (m *Monitor) listenServers() {
 	}
 }
 
-func (m *Monitor) listenNotifiers() {
+func (m *Monitor) listenForNotifications() {
 	for {
 		server := <-m.notifier
 		go m.notifiers.NotifyAll(server.String())

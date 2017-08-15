@@ -10,6 +10,15 @@ type Validator interface {
 	Validate() (bool, error)
 }
 
+func ValidateAll(validators []Validator) (bool, error) {
+	for _, validator := range validators {
+		if ok, err := validator.Validate(); !ok {
+			return false, err
+		}
+	}
+	return true, nil
+}
+
 func (c *Config) Validate() (bool, error) {
 	if ok, err := c.Settings.Validate(); !ok {
 		return false, fmt.Errorf("invalid settings: %v", err)
@@ -53,7 +62,7 @@ func (ns *NotificationSettings) Validate() (bool, error) {
 
 func (es *EmailSettings) Validate() (bool, error) {
 	if es.Password == "" || es.Username == "" || es.SMTP == "" || es.Port == 0 {
-		return false, fmt.Errorf("missing email settings")
+		return false, fmt.Errorf("missing email settings property")
 	}
 	return true, nil
 }
