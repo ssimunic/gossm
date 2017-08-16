@@ -18,6 +18,8 @@ type Monitor struct {
 	notifiers Notifiers
 	// Channel used for receive servers that couldn't be reached
 	notifier chan *Server
+	// Used to regulate number of concurrent connections
+	semaphore chan struct{}
 	// Sending to stop channel makes program exit
 	stop chan struct{}
 }
@@ -27,7 +29,8 @@ func NewMonitor(c *Config) *Monitor {
 		config:    c,
 		checker:   make(chan *Server),
 		notifiers: c.Settings.Notifications.GetNotifiers(),
-		notifier:  make(chan *Server, c.Settings.Monitor.MaxConnections),
+		notifier:  make(chan *Server),
+		semaphore: make(chan struct{}, c.Settings.Monitor.MaxConnections),
 		stop:      make(chan struct{}),
 	}
 }
@@ -94,7 +97,12 @@ func (m *Monitor) monitor() {
 
 func (m *Monitor) listenForChecks() {
 	for server := range m.checker {
-		go m.checkServerStatus(server)
+		logger.Logln("new")
+		go func(server *Server) {
+			m.semaphore <- struct{}{}
+			m.checkServerStatus(server)
+			<-m.semaphore
+		}(server)
 	}
 }
 
