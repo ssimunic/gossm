@@ -12,27 +12,38 @@ import (
 type Monitor struct {
 	// Holds settings and servers
 	config *Config
+
 	// Channel used to schedule checks for servers
-	checker chan *Server
+	checkerCh chan *Server
+
 	// Notification methods used to send messages when server can't be reached
 	notifiers Notifiers
+
 	// Channel used for receive servers that couldn't be reached
-	notifier chan *Server
+	notifierCh chan *Server
+
+	// Used for exponential backoff in notifying
+	lastNotified map[*Server]*ExpBackoff
+
 	// Used to regulate number of concurrent connections
 	semaphore chan struct{}
+
 	// Sending to stop channel makes program exit
 	stop chan struct{}
 }
 
 func NewMonitor(c *Config) *Monitor {
-	return &Monitor{
-		config:    c,
-		checker:   make(chan *Server),
-		notifiers: c.Settings.Notifications.GetNotifiers(),
-		notifier:  make(chan *Server),
-		semaphore: make(chan struct{}, c.Settings.Monitor.MaxConnections),
-		stop:      make(chan struct{}),
+	m := &Monitor{
+		config:       c,
+		checkerCh:    make(chan *Server),
+		notifiers:    c.Settings.Notifications.GetNotifiers(),
+		notifierCh:   make(chan *Server),
+		lastNotified: make(map[*Server]*ExpBackoff),
+		semaphore:    make(chan struct{}, c.Settings.Monitor.MaxConnections),
+		stop:         make(chan struct{}),
 	}
+
+	return m
 }
 
 func (m *Monitor) Run() {
@@ -81,7 +92,7 @@ func (m *Monitor) scheduleServer(s *Server) {
 	tickerSeconds := time.NewTicker(time.Duration(s.CheckInterval) * time.Second)
 
 	for range tickerSeconds.C {
-		m.checker <- s
+		m.checkerCh <- s
 	}
 }
 
@@ -96,8 +107,7 @@ func (m *Monitor) monitor() {
 }
 
 func (m *Monitor) listenForChecks() {
-	for server := range m.checker {
-		logger.Logln("new")
+	for server := range m.checkerCh {
 		go func(server *Server) {
 			m.semaphore <- struct{}{}
 			m.checkServerStatus(server)
@@ -107,8 +117,11 @@ func (m *Monitor) listenForChecks() {
 }
 
 func (m *Monitor) listenForNotifications() {
-	for server := range m.notifier {
-		go m.notifiers.NotifyAll(server.String())
+	for server := range m.notifierCh {
+		if _, ok := m.lastNotified[server]; !ok {
+			m.lastNotified[server] = NewExpBackoff(2)
+		}
+		go m.notifiers.NotifyAllWithDelay(server.String(), m.lastNotified[server].NextDelay())
 	}
 }
 
@@ -121,7 +134,7 @@ func (m *Monitor) checkServerStatus(server *Server) {
 		logger.Logln(err)
 		logger.Logln("ERROR", server)
 		go func() {
-			m.notifier <- server
+			m.notifierCh <- server
 		}()
 		return
 	}

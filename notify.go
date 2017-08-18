@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"net/smtp"
 	"strings"
+	"time"
 
 	"github.com/ssimunic/gossm/logger"
 )
@@ -28,6 +29,13 @@ type SmsNotifier struct {
 }
 
 func (notifiers Notifiers) NotifyAll(text string) {
+	for _, notifier := range notifiers {
+		go notifier.Notify(text)
+	}
+}
+
+func (notifiers Notifiers) NotifyAllWithDelay(text string, delay time.Duration) {
+	<-time.After(delay)
 	for _, notifier := range notifiers {
 		go notifier.Notify(text)
 	}
