@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"net/smtp"
 	"strings"
-	"time"
 
 	"github.com/ssimunic/gossm/logger"
 )
@@ -33,14 +32,6 @@ func (notifiers Notifiers) NotifyAll(text string) {
 		go notifier.Notify(text)
 	}
 }
-
-func (notifiers Notifiers) NotifyAllWithDelay(text string, delay time.Duration) {
-	<-time.After(delay)
-	for _, notifier := range notifiers {
-		go notifier.Notify(text)
-	}
-}
-
 func (e *EmailNotifier) Initialize() {
 	logger.Logln("Authenticating", e.settings.Username)
 	e.auth = smtp.PlainAuth(
@@ -52,13 +43,13 @@ func (e *EmailNotifier) Initialize() {
 }
 
 func (e *EmailNotifier) Notify(text string) {
+	logger.Logln("Sending email notification:", text)
 	formattedReceipets := strings.Join(e.settings.To, ", ")
 	msg := "From: " + e.settings.From + "\n" +
 		"To: " + formattedReceipets + "\n" +
 		"Subject: GOSSM Notification\n\n" +
 		text + " not reached."
 
-	logger.Logln("Sending email notification:", text)
 	err := smtp.SendMail(
 		fmt.Sprintf("%s:%d", e.settings.SMTP, e.settings.Port),
 		e.auth,

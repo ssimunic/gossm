@@ -22,7 +22,8 @@
         "monitor": {
             "checkInterval": 5,
             "timeout": 5,
-            "maxConnections": 1
+            "maxConnections": 1,
+            "exponentialBackoffSeconds": 5            
         }
     },
     "servers": [

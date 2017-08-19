@@ -1,10 +1,10 @@
-package gossm
+package tracker
 
 import (
 	"time"
 )
 
-// ExpBackoff is used to delay notifications in exponential way
+// ExpBackoff is used to get time duration in exponential way
 type ExpBackoff struct {
 	counter int
 	base    int
@@ -17,8 +17,8 @@ func calculateExponential(base, counter int) int {
 	return base * calculateExponential(base, counter-1)
 }
 
-// NextDelay returns seconds until next iteration
-func (e *ExpBackoff) NextDelay() time.Duration {
+// Delay returns seconds until next iteration
+func (e *ExpBackoff) Delay() time.Duration {
 	e.counter++
 	return time.Duration(calculateExponential(e.base, e.counter)) * time.Second
 }

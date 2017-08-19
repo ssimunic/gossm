@@ -7,6 +7,7 @@ import (
 	"time"
 
 	"github.com/ssimunic/gossm/logger"
+	"github.com/ssimunic/gossm/tracker"
 )
 
 type Monitor struct {
@@ -22,8 +23,7 @@ type Monitor struct {
 	// Channel used for receive servers that couldn't be reached
 	notifierCh chan *Server
 
-	// Used for exponential backoff in notifying
-	lastNotified map[*Server]*ExpBackoff
+	notificationTracker map[*Server]*tracker.TimeTracker
 
 	// Used to regulate number of concurrent connections
 	semaphore chan struct{}
@@ -34,13 +34,13 @@ type Monitor struct {
 
 func NewMonitor(c *Config) *Monitor {
 	m := &Monitor{
-		config:       c,
-		checkerCh:    make(chan *Server),
-		notifiers:    c.Settings.Notifications.GetNotifiers(),
-		notifierCh:   make(chan *Server),
-		lastNotified: make(map[*Server]*ExpBackoff),
-		semaphore:    make(chan struct{}, c.Settings.Monitor.MaxConnections),
-		stop:         make(chan struct{}),
+		config:              c,
+		checkerCh:           make(chan *Server),
+		notifiers:           c.Settings.Notifications.GetNotifiers(),
+		notifierCh:          make(chan *Server),
+		notificationTracker: make(map[*Server]*tracker.TimeTracker),
+		semaphore:           make(chan struct{}, c.Settings.Monitor.MaxConnections),
+		stop:                make(chan struct{}),
 	}
 
 	return m
@@ -118,10 +118,16 @@ func (m *Monitor) listenForChecks() {
 
 func (m *Monitor) listenForNotifications() {
 	for server := range m.notifierCh {
-		if _, ok := m.lastNotified[server]; !ok {
-			m.lastNotified[server] = NewExpBackoff(2)
+		if _, ok := m.notificationTracker[server]; !ok {
+			m.notificationTracker[server] =
+				tracker.NewTimeTracker(tracker.NewExpBackoff(m.config.Settings.Monitor.ExponentialBackoffSeconds))
 		}
-		go m.notifiers.NotifyAllWithDelay(server.String(), m.lastNotified[server].NextDelay())
+		timeTracker := m.notificationTracker[server]
+		if timeTracker.IsReady() {
+			nextTime := timeTracker.SetNext()
+			logger.Logln("Next notification for", server.String(), "at", nextTime)
+			go m.notifiers.NotifyAll(server.String())
+		}
 	}
 }
 

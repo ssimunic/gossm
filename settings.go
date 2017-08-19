@@ -6,9 +6,10 @@ type Settings struct {
 }
 
 type MonitorSettings struct {
-	CheckInterval  int `json:"checkInterval"`
-	Timeout        int `json:"timeout"`
-	MaxConnections int `json:"maxConnections"`
+	CheckInterval             int `json:"checkInterval"`
+	Timeout                   int `json:"timeout"`
+	MaxConnections            int `json:"maxConnections"`
+	ExponentialBackoffSeconds int `json:"exponentialBackoffSeconds"`
 }
 
 type NotificationSettings struct {

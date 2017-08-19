@@ -40,7 +40,9 @@ func (s *Settings) Validate() (bool, error) {
 }
 
 func (ms *MonitorSettings) Validate() (bool, error) {
-	if ms.CheckInterval <= 0 || ms.MaxConnections <= 0 || ms.Timeout <= 0 {
+	// ExponentialBackoffSeconds can be 0, which means when calculated,
+	// delay for notifications will always be 1 second
+	if ms.CheckInterval <= 0 || ms.MaxConnections <= 0 || ms.Timeout <= 0 || ms.ExponentialBackoffSeconds < 0 {
 		return false, fmt.Errorf("monitor settings missing")
 	}
 	return true, nil
