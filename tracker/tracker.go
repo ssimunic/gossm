@@ -10,6 +10,8 @@ type TimeTracker struct {
 	nextTime time.Time
 }
 
+// IsReady checks if current time is after nextTime
+// On firch check before calling SetNext, always true due to nextTime having zero value
 func (t *TimeTracker) IsReady() bool {
 	if time.Now().After(t.nextTime) {
 		return true
@@ -17,12 +19,15 @@ func (t *TimeTracker) IsReady() bool {
 	return false
 }
 
+// SetNext updates nextTime based on delayer implementation
+// Returns delay and time at which will current time be after it
 func (t *TimeTracker) SetNext() (time.Duration, time.Time) {
 	nextDelay := t.delayer.Delay()
 	t.nextTime = time.Now().Add(nextDelay)
 	return nextDelay, t.nextTime
 }
 
+// NewTimeTracker returns pointer to new TimeTracker and sets its Delayer
 func NewTimeTracker(delayer Delayer) *TimeTracker {
 	return &TimeTracker{delayer: delayer}
 }

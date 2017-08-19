@@ -4,7 +4,7 @@ import (
 	"time"
 )
 
-// ExpBackoff is used to get time duration in exponential way
+// ExpBackoff is used as delayer, implements exponential backoff algorithm
 type ExpBackoff struct {
 	counter int
 	base    int
@@ -17,7 +17,7 @@ func calculateExponential(base, counter int) int {
 	return base * calculateExponential(base, counter-1)
 }
 
-// Delay returns seconds until next iteration
+// Delay returns seconds
 func (e *ExpBackoff) Delay() time.Duration {
 	e.counter++
 	return time.Duration(calculateExponential(e.base, e.counter)) * time.Second

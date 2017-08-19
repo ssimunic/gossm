@@ -23,6 +23,7 @@ type Monitor struct {
 	// Channel used for receive servers that couldn't be reached
 	notifierCh chan *Server
 
+	// To reduce notification spam, tracker is used to delay notifications
 	notificationTracker map[*Server]*tracker.TimeTracker
 
 	// Used to regulate number of concurrent connections
@@ -43,9 +44,37 @@ func NewMonitor(c *Config) *Monitor {
 		stop:                make(chan struct{}),
 	}
 
+	m.initialize()
+
 	return m
 }
 
+func (m *Monitor) initialize() {
+	// Initialize notification methods to reduce overhead
+	for _, notifier := range m.notifiers {
+		if initializer, ok := notifier.(Initializer); ok {
+			initializer.Initialize()
+		}
+	}
+
+	// Initialize notificationTracker
+	for _, server := range m.config.Servers {
+		m.notificationTracker[server] =
+			tracker.NewTimeTracker(tracker.NewExpBackoff(m.config.Settings.Monitor.ExponentialBackoffSeconds))
+	}
+
+	// Set default CheckInterval and Timeout for servers who miss them
+	for _, server := range m.config.Servers {
+		switch {
+		case server.CheckInterval <= 0:
+			server.CheckInterval = m.config.Settings.Monitor.CheckInterval
+		case server.Timeout <= 0:
+			server.Timeout = m.config.Settings.Monitor.Timeout
+		}
+	}
+}
+
+// Run runs monitor infinitely
 func (m *Monitor) Run() {
 	m.RunForSeconds(0)
 }
@@ -60,15 +89,6 @@ func (m *Monitor) RunForSeconds(runningSeconds int) {
 		}()
 	}
 
-	// Initialize notification methods to reduce overhead
-	for _, notifier := range m.notifiers {
-		if initializer, ok := notifier.(Initializer); ok {
-			initializer.Initialize()
-		}
-	}
-
-	m.prepareServers()
-
 	for _, server := range m.config.Servers {
 		go m.scheduleServer(server)
 	}
@@ -77,17 +97,6 @@ func (m *Monitor) RunForSeconds(runningSeconds int) {
 	m.monitor()
 }
 
-// prepareServers sets default CheckInterval and Timeout for each Server if they are not set
-func (m *Monitor) prepareServers() {
-	for _, server := range m.config.Servers {
-		switch {
-		case server.CheckInterval <= 0:
-			server.CheckInterval = m.config.Settings.Monitor.CheckInterval
-		case server.Timeout <= 0:
-			server.Timeout = m.config.Settings.Monitor.Timeout
-		}
-	}
-}
 func (m *Monitor) scheduleServer(s *Server) {
 	tickerSeconds := time.NewTicker(time.Duration(s.CheckInterval) * time.Second)
 
@@ -118,15 +127,11 @@ func (m *Monitor) listenForChecks() {
 
 func (m *Monitor) listenForNotifications() {
 	for server := range m.notifierCh {
-		if _, ok := m.notificationTracker[server]; !ok {
-			m.notificationTracker[server] =
-				tracker.NewTimeTracker(tracker.NewExpBackoff(m.config.Settings.Monitor.ExponentialBackoffSeconds))
-		}
 		timeTracker := m.notificationTracker[server]
 		if timeTracker.IsReady() {
-			nextTime := timeTracker.SetNext()
-			logger.Logln("Next notification for", server.String(), "at", nextTime)
+			nextDelay, nextTime := timeTracker.SetNext()
 			go m.notifiers.NotifyAll(server.String())
+			logger.Logln("Next available notification for", server.String(), "in", nextDelay, "at", nextTime)
 		}
 	}
 }
