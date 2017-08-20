@@ -11,7 +11,7 @@ type TimeTracker struct {
 }
 
 // IsReady checks if current time is after nextTime
-// On firch check before calling SetNext, always true due to nextTime having zero value
+// On first check before calling SetNext, always true due to nextTime having zero value
 func (t *TimeTracker) IsReady() bool {
 	if time.Now().After(t.nextTime) {
 		return true

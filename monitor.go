@@ -131,6 +131,7 @@ func (m *Monitor) listenForNotifications() {
 }
 
 func (m *Monitor) checkServerStatus(server *Server) {
+	// NewWorker() blocks if there aren't free slots for concurrency
 	worker, output := m.dialer.NewWorker()
 	go func() {
 		logger.Logln("Checking", server)

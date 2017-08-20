@@ -2,11 +2,13 @@ package gossm
 
 import (
 	"encoding/json"
+
+	"github.com/ssimunic/gossm/validator"
 )
 
 type Config struct {
-	Servers  Servers  `json:"servers"`
-	Settings Settings `json:"settings"`
+	Servers  Servers   `json:"servers"`
+	Settings *Settings `json:"settings"`
 }
 
 // NewConfig returns pointer to Config which is created from provided JSON data.
@@ -17,7 +19,7 @@ func NewConfig(jsonData []byte) *Config {
 	if err != nil {
 		panic("error parsing json configuration data")
 	}
-	if ok, err := config.Validate(); !ok {
+	if ok, err := validator.ValidateAll(config); !ok {
 		panic(err)
 	}
 	return config

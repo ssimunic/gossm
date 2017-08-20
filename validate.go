@@ -4,21 +4,6 @@ import (
 	"fmt"
 )
 
-// Validator is used to validate fields of config structure
-type Validator interface {
-	// Validate returns <true, nil> if valid, <false, error> if invalid
-	Validate() (bool, error)
-}
-
-func ValidateAll(validators []Validator) (bool, error) {
-	for _, validator := range validators {
-		if ok, err := validator.Validate(); !ok {
-			return false, err
-		}
-	}
-	return true, nil
-}
-
 func (c *Config) Validate() (bool, error) {
 	if ok, err := c.Settings.Validate(); !ok {
 		return false, fmt.Errorf("invalid settings: %v", err)
