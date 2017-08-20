@@ -20,10 +20,10 @@
             ]     
         },
         "monitor": {
-            "checkInterval": 5,
+            "checkInterval": 15,
             "timeout": 5,
-            "maxConnections": 1,
-            "exponentialBackoffSeconds": 5            
+            "maxConnections": 50,
+            "exponentialBackoffSeconds": 5
         }
     },
     "servers": [

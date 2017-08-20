@@ -4,7 +4,7 @@ import (
 	"time"
 )
 
-// TimeTracker is used to time notifications
+// TimeTracker is used to keep track of something
 type TimeTracker struct {
 	delayer  Delayer
 	nextTime time.Time
@@ -27,7 +27,7 @@ func (t *TimeTracker) SetNext() (time.Duration, time.Time) {
 	return nextDelay, t.nextTime
 }
 
-// NewTimeTracker returns pointer to new TimeTracker and sets its Delayer
-func NewTimeTracker(delayer Delayer) *TimeTracker {
+// New returns pointer to new TimeTracker and sets its Delayer
+func New(delayer Delayer) *TimeTracker {
 	return &TimeTracker{delayer: delayer}
 }

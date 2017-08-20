@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"log"
 	"os"
+	"strings"
 	"sync"
 	"time"
 )
@@ -12,19 +13,22 @@ var (
 	enabledFileLog = true
 	logFilename    = "log.txt"
 	mu             sync.Mutex
+	filter         string
 )
 
 // Log writes text to standard output and file
 func Log(text string) {
-	log.Print(text)
+	if filter == "" || (filter != "" && strings.Contains(text, filter)) {
+		log.Print(text)
 
-	if !enabledFileLog {
-		return
-	}
-	mu.Lock()
-	defer mu.Unlock()
-	if err := writeToFile(logFilename, text); err != nil {
-		log.Println(err)
+		if !enabledFileLog {
+			return
+		}
+		mu.Lock()
+		defer mu.Unlock()
+		if err := writeToFile(logFilename, text); err != nil {
+			log.Println(err)
+		}
 	}
 }
 
@@ -51,6 +55,10 @@ func Disable() {
 // Enable logging to file
 func Enable() {
 	enabledFileLog = true
+}
+
+func Filter(f string) {
+	filter = f
 }
 
 // writeToFile writes text to fileName, creates new one if it doesn't exist
