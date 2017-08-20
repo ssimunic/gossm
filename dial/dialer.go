@@ -1,4 +1,4 @@
-package dialer
+package dial
 
 import (
 	"net"
@@ -15,8 +15,8 @@ type Status struct {
 	Err error
 }
 
-// New returns pointer to new Dialer
-func New(concurrentConnections int) *Dialer {
+// NewDialer returns pointer to new Dialer
+func NewDialer(concurrentConnections int) *Dialer {
 	return &Dialer{
 		semaphore: make(chan struct{}, concurrentConnections),
 	}

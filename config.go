@@ -3,7 +3,7 @@ package gossm
 import (
 	"encoding/json"
 
-	"github.com/ssimunic/gossm/validator"
+	"github.com/ssimunic/gossm/validate"
 )
 
 type Config struct {
@@ -19,7 +19,7 @@ func NewConfig(jsonData []byte) *Config {
 	if err != nil {
 		panic("error parsing json configuration data")
 	}
-	if ok, err := validator.ValidateAll(config); !ok {
+	if ok, err := validate.ValidateAll(config); !ok {
 		panic(err)
 	}
 	return config

@@ -47,32 +47,6 @@ func (ns *NotificationSettings) Validate() (bool, error) {
 	return true, nil
 }
 
-func (es *EmailSettings) Validate() (bool, error) {
-	errEmailProperty := func(property string) error {
-		return fmt.Errorf("missing email property %s", property)
-	}
-	switch {
-	case es.Username == "":
-		return false, errEmailProperty("username")
-	case es.Password == "":
-		return false, errEmailProperty("password")
-	case es.SMTP == "":
-		return false, errEmailProperty("smtp")
-	case es.Port == 0:
-		return false, errEmailProperty("port")
-	case es.From == "":
-		return false, errEmailProperty("from")
-	case len(es.To) == 0:
-		return false, errEmailProperty("to")
-	}
-	return true, nil
-}
-
-func (ss *SmsSettings) Validate() (bool, error) {
-	// TODO
-	return true, nil
-}
-
 func (servers Servers) Validate() (bool, error) {
 	if len(servers) == 0 {
 		return false, fmt.Errorf("no servers found in config")

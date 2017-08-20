@@ -5,9 +5,10 @@ import (
 	"os"
 	"time"
 
-	"github.com/ssimunic/gossm/dialer"
+	"github.com/ssimunic/gossm/dial"
 	"github.com/ssimunic/gossm/logger"
-	"github.com/ssimunic/gossm/tracker"
+	"github.com/ssimunic/gossm/notify"
+	"github.com/ssimunic/gossm/track"
 )
 
 type Monitor struct {
@@ -18,16 +19,16 @@ type Monitor struct {
 	checkerCh chan *Server
 
 	// Notification methods used to send messages when server can't be reached
-	notifiers Notifiers
+	notifiers notify.Notifiers
 
 	// Channel used for receive servers that couldn't be reached
 	notifierCh chan *Server
 
 	// To reduce notification spam, tracker is used to delay notifications
-	notificationTracker map[*Server]*tracker.TimeTracker
+	notificationTracker map[*Server]*track.TimeTracker
 
 	// Used to test connections
-	dialer *dialer.Dialer
+	dialer *dial.Dialer
 
 	// Sending to stop channel makes program exit
 	stop chan struct{}
@@ -39,8 +40,8 @@ func NewMonitor(c *Config) *Monitor {
 		checkerCh:           make(chan *Server),
 		notifiers:           c.Settings.Notifications.GetNotifiers(),
 		notifierCh:          make(chan *Server),
-		notificationTracker: make(map[*Server]*tracker.TimeTracker),
-		dialer:              dialer.New(c.Settings.Monitor.MaxConnections),
+		notificationTracker: make(map[*Server]*track.TimeTracker),
+		dialer:              dial.NewDialer(c.Settings.Monitor.MaxConnections),
 		stop:                make(chan struct{}),
 	}
 	m.initialize()
@@ -50,7 +51,8 @@ func NewMonitor(c *Config) *Monitor {
 func (m *Monitor) initialize() {
 	// Initialize notification methods to reduce overhead
 	for _, notifier := range m.notifiers {
-		if initializer, ok := notifier.(Initializer); ok {
+		if initializer, ok := notifier.(notify.Initializer); ok {
+			logger.Logln("Initializing", initializer)
 			initializer.Initialize()
 		}
 	}
@@ -58,7 +60,7 @@ func (m *Monitor) initialize() {
 	// Initialize notificationTracker
 	for _, server := range m.config.Servers {
 		m.notificationTracker[server] =
-			tracker.New(tracker.NewExpBackoff(m.config.Settings.Monitor.ExponentialBackoffSeconds))
+			track.NewTracker(track.NewExpBackoff(m.config.Settings.Monitor.ExponentialBackoffSeconds))
 	}
 
 	// Set default CheckInterval and Timeout for servers who miss them
@@ -124,6 +126,7 @@ func (m *Monitor) listenForNotifications() {
 		timeTracker := m.notificationTracker[server]
 		if timeTracker.IsReady() {
 			nextDelay, nextTime := timeTracker.SetNext()
+			logger.Logln("Sending notifications for", server)
 			go m.notifiers.NotifyAll(server.String())
 			logger.Logln("Next available notification for", server.String(), "in", nextDelay, "at", nextTime)
 		}
@@ -138,7 +141,7 @@ func (m *Monitor) checkServerStatus(server *Server) {
 
 		formattedAddress := fmt.Sprintf("%s:%d", server.IPAddress, server.Port)
 		timeoutSeconds := time.Duration(server.Timeout) * time.Second
-		worker <- dialer.NetAddressTimeout{NetAddress: dialer.NetAddress{Network: server.Protocol, Address: formattedAddress}, Timeout: timeoutSeconds}
+		worker <- dial.NetAddressTimeout{NetAddress: dial.NetAddress{Network: server.Protocol, Address: formattedAddress}, Timeout: timeoutSeconds}
 		dialerStatus := <-output
 
 		if !dialerStatus.Ok {

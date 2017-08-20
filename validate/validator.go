@@ -1,4 +1,4 @@
-package validator
+package validate
 
 // Validator is used to validate something
 type Validator interface {

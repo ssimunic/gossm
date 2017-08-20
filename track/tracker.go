@@ -1,4 +1,4 @@
-package tracker
+package track
 
 import (
 	"time"
@@ -27,7 +27,7 @@ func (t *TimeTracker) SetNext() (time.Duration, time.Time) {
 	return nextDelay, t.nextTime
 }
 
-// New returns pointer to new TimeTracker and sets its Delayer
-func New(delayer Delayer) *TimeTracker {
+// NewTracker returns pointer to new TimeTracker and sets its Delayer
+func NewTracker(delayer Delayer) *TimeTracker {
 	return &TimeTracker{delayer: delayer}
 }
