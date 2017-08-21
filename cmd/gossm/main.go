@@ -11,8 +11,8 @@ import (
 var configPath = flag.String("config", "config.json", "configuration file")
 var logPath = flag.String("log", "log.txt", "log file")
 var address = flag.String("http", ":8080", "address for http server")
-var nolog = flag.Bool("nolog", false, "disable logging to file")
-var logfilter = flag.String("logfilter", "", "text to filter log")
+var nolog = flag.Bool("nolog", false, "disable logging to file only")
+var logfilter = flag.String("logfilter", "", "text to filter log (both console and file)")
 
 func main() {
 	flag.Parse()

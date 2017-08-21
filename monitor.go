@@ -32,6 +32,9 @@ type Monitor struct {
 
 	// Sending to stop channel makes program exit
 	stop chan struct{}
+
+	// TODO: For each server, keep map with time and up/down status
+	data map[*Server]map[*time.Time]bool
 }
 
 func NewMonitor(c *Config) *Monitor {

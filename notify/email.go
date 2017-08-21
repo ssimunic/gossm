@@ -7,12 +7,12 @@ import (
 )
 
 type EmailSettings struct {
-	SMTP     string   `json:"smtp"`
-	Port     int      `json:"port"`
-	Username string   `json:"username"`
-	Password string   `json:"password"`
-	From     string   `json:"from"`
-	To       []string `json:"to"`
+	SMTP     string
+	Port     int
+	Username string
+	Password string
+	From     string
+	To       []string
 }
 
 type EmailNotifier struct {
@@ -54,7 +54,7 @@ func (e *EmailNotifier) String() string {
 	return fmt.Sprintf("email %s at %s:%d", e.Settings.Username, e.Settings.SMTP, e.Settings.Port)
 }
 
-func (e *EmailNotifier) Notify(text string) {
+func (e *EmailNotifier) Notify(text string) (bool, error) {
 	formattedReceipets := strings.Join(e.Settings.To, ", ")
 	msg := "From: " + e.Settings.From + "\n" +
 		"To: " + formattedReceipets + "\n" +
@@ -69,5 +69,7 @@ func (e *EmailNotifier) Notify(text string) {
 		[]byte(msg),
 	)
 	if err != nil {
+		return false, fmt.Errorf("error sending email: %s", err)
 	}
+	return true, nil
 }
