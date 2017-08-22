@@ -18,3 +18,7 @@ type Server struct {
 func (s *Server) String() string {
 	return fmt.Sprintf("%s %s:%d", s.Protocol, s.IPAddress, s.Port)
 }
+
+func (s *Server) MarshalText() (text []byte, err error) {
+	return []byte(s.String()), nil
+}

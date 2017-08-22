@@ -31,6 +31,6 @@ func main() {
 
 	config := gossm.NewConfig(jsonData)
 	monitor := gossm.NewMonitor(config)
-	go gossm.RunHttp(*address)
+	go gossm.RunHttp(*address, monitor)
 	monitor.Run()
 }
