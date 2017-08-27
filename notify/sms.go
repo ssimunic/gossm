@@ -8,14 +8,14 @@ type SmsNotifier struct {
 	Settings *SmsSettings
 }
 
-func (s *SmsNotifier) Notify(text string) (bool, error) {
+func (s *SmsNotifier) Notify(text string) error {
 	// TODO
-	return false, nil
+	return nil
 }
 
-func (ss *SmsSettings) Validate() (bool, error) {
+func (ss *SmsSettings) Validate() error {
 	// TODO
-	return true, nil
+	return nil
 }
 
 func (s *SmsNotifier) String() string {

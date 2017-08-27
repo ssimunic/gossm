@@ -4,76 +4,76 @@ import (
 	"fmt"
 )
 
-func (c *Config) Validate() (bool, error) {
-	if ok, err := c.Settings.Validate(); !ok {
-		return false, fmt.Errorf("invalid settings: %v", err)
+func (c *Config) Validate() error {
+	if err := c.Settings.Validate(); err != nil {
+		return fmt.Errorf("invalid settings: %v", err)
 	}
-	if ok, err := c.Servers.Validate(); !ok {
-		return false, fmt.Errorf("invalid servers: %v", err)
+	if err := c.Servers.Validate(); err != nil {
+		return fmt.Errorf("invalid servers: %v", err)
 	}
-	return true, nil
+	return nil
 }
 
-func (s *Settings) Validate() (bool, error) {
-	if ok, err := s.Monitor.Validate(); !ok {
-		return false, fmt.Errorf("invalid monitor settings: %v", err)
+func (s *Settings) Validate() error {
+	if err := s.Monitor.Validate(); err != nil {
+		return fmt.Errorf("invalid monitor settings: %v", err)
 	}
-	if ok, err := s.Notifications.Validate(); !ok {
-		return false, fmt.Errorf("invalid notification settings: %v", err)
+	if err := s.Notifications.Validate(); err != nil {
+		return fmt.Errorf("invalid notification settings: %v", err)
 	}
-	return true, nil
+	return nil
 }
 
-func (ms *MonitorSettings) Validate() (bool, error) {
+func (ms *MonitorSettings) Validate() error {
 	// ExponentialBackoffSeconds can be 0, which means when calculated,
 	// delay for notifications will always be 1 second
 	if ms.CheckInterval <= 0 || ms.MaxConnections <= 0 || ms.Timeout <= 0 || ms.ExponentialBackoffSeconds < 0 {
-		return false, fmt.Errorf("monitor settings missing")
+		return fmt.Errorf("monitor settings missing")
 	}
-	return true, nil
+	return nil
 }
 
-func (ns *NotificationSettings) Validate() (bool, error) {
+func (ns *NotificationSettings) Validate() error {
 	for _, email := range ns.Email {
-		if ok, err := email.Validate(); !ok {
-			return false, fmt.Errorf("invalid email settings: %v", err)
+		if err := email.Validate(); err != nil {
+			return fmt.Errorf("invalid email settings: %v", err)
 		}
 	}
 	for _, sms := range ns.Sms {
-		if ok, err := sms.Validate(); !ok {
-			return false, fmt.Errorf("invalid sms settings: %v", err)
+		if err := sms.Validate(); err != nil {
+			return fmt.Errorf("invalid sms settings: %v", err)
 		}
 	}
-	return true, nil
+	return nil
 }
 
-func (servers Servers) Validate() (bool, error) {
+func (servers Servers) Validate() error {
 	if len(servers) == 0 {
-		return false, fmt.Errorf("no servers found in config")
+		return fmt.Errorf("no servers found in config")
 	}
 
 	for _, server := range servers {
-		if ok, err := server.Validate(); !ok {
-			return false, fmt.Errorf("invalid server settings: %s", err)
+		if err := server.Validate(); err != nil {
+			return fmt.Errorf("invalid server settings: %s", err)
 		}
 
 	}
-	return true, nil
+	return nil
 }
 
-func (s *Server) Validate() (bool, error) {
+func (s *Server) Validate() error {
 	errServerProperty := func(property string) error {
 		return fmt.Errorf("missing server property %s", property)
 	}
 	switch {
 	case s.Name == "":
-		return false, errServerProperty("name")
+		return errServerProperty("name")
 	case s.IPAddress == "":
-		return false, errServerProperty("ipAddress")
+		return errServerProperty("ipAddress")
 	case s.Port == 0:
-		return false, errServerProperty("port")
+		return errServerProperty("port")
 	case s.Protocol == "":
-		return false, errServerProperty("protocol")
+		return errServerProperty("protocol")
 	}
-	return true, nil
+	return nil
 }

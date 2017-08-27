@@ -1,18 +1,20 @@
 package gossm
 
 import (
-	"encoding/json"
-	"github.com/ssimunic/gossm/logger"
+	"io"
 	"net/http"
+	"strconv"
 )
 
 func RunHttp(address string, monitor *Monitor) {
 	http.HandleFunc("/", func(rw http.ResponseWriter, req *http.Request) {
-		out, err := json.Marshal(monitor.Data)
-		if err != nil {
-			logger.Logln(err)
+		for server, serverStatus := range monitor.serverStatusData.GetServerStatus() {
+			io.WriteString(rw, server.String()+"\n")
+			for _, statusAtTime := range serverStatus {
+				io.WriteString(rw, " "+strconv.FormatBool(statusAtTime.Status)+"\n")
+			}
 		}
-		rw.Write(out)
 	})
+
 	http.ListenAndServe(address, nil)
 }

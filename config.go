@@ -19,7 +19,7 @@ func NewConfig(jsonData []byte) *Config {
 	if err != nil {
 		panic("error parsing json configuration data")
 	}
-	if ok, err := validate.ValidateAll(config); !ok {
+	if err := validate.ValidateAll(config); err != nil {
 		panic(err)
 	}
 	return config

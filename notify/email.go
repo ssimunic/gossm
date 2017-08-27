@@ -20,25 +20,25 @@ type EmailNotifier struct {
 	auth     smtp.Auth
 }
 
-func (es *EmailSettings) Validate() (bool, error) {
+func (es *EmailSettings) Validate() error {
 	errEmailProperty := func(property string) error {
 		return fmt.Errorf("missing email property %s", property)
 	}
 	switch {
 	case es.Username == "":
-		return false, errEmailProperty("username")
+		return errEmailProperty("username")
 	case es.Password == "":
-		return false, errEmailProperty("password")
+		return errEmailProperty("password")
 	case es.SMTP == "":
-		return false, errEmailProperty("smtp")
+		return errEmailProperty("smtp")
 	case es.Port == 0:
-		return false, errEmailProperty("port")
+		return errEmailProperty("port")
 	case es.From == "":
-		return false, errEmailProperty("from")
+		return errEmailProperty("from")
 	case len(es.To) == 0:
-		return false, errEmailProperty("to")
+		return errEmailProperty("to")
 	}
-	return true, nil
+	return nil
 }
 
 func (e *EmailNotifier) Initialize() {
@@ -54,7 +54,7 @@ func (e *EmailNotifier) String() string {
 	return fmt.Sprintf("email %s at %s:%d", e.Settings.Username, e.Settings.SMTP, e.Settings.Port)
 }
 
-func (e *EmailNotifier) Notify(text string) (bool, error) {
+func (e *EmailNotifier) Notify(text string) error {
 	formattedReceipets := strings.Join(e.Settings.To, ", ")
 	msg := "From: " + e.Settings.From + "\n" +
 		"To: " + formattedReceipets + "\n" +
@@ -69,7 +69,7 @@ func (e *EmailNotifier) Notify(text string) (bool, error) {
 		[]byte(msg),
 	)
 	if err != nil {
-		return false, fmt.Errorf("error sending email: %s", err)
+		return fmt.Errorf("error sending email: %s", err)
 	}
-	return true, nil
+	return nil
 }

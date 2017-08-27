@@ -14,6 +14,12 @@
 .glide/
 
 # GOSSM
+logs/*
+
 cmd/gossm/gossm
 cmd/gossm/log.txt
 cmd/gossm/myconfig.json
+
+gossm
+log.txt
+myconfig.json

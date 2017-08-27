@@ -34,7 +34,7 @@ type Monitor struct {
 	stop chan struct{}
 
 	// TODO: For each server, keep map with time and up/down status
-	Data map[*Server]StatusData `json:"data"`
+	serverStatusData *ServerStatusData
 }
 
 func NewMonitor(c *Config) *Monitor {
@@ -46,7 +46,7 @@ func NewMonitor(c *Config) *Monitor {
 		notificationTracker: make(map[*Server]*track.TimeTracker),
 		dialer:              dial.NewDialer(c.Settings.Monitor.MaxConnections),
 		stop:                make(chan struct{}),
-		Data:                make(map[*Server]StatusData),
+		serverStatusData:    NewServerStatusData(c.Servers),
 	}
 	m.initialize()
 	return m
@@ -72,11 +72,6 @@ func (m *Monitor) initialize() {
 			server.CheckInterval = m.config.Settings.Monitor.CheckInterval
 		case server.Timeout <= 0:
 			server.Timeout = m.config.Settings.Monitor.Timeout
-		}
-
-		// Initialize data map
-		m.Data[server] = StatusData{
-			StatusAtTime: make(map[time.Time]bool),
 		}
 	}
 }
@@ -141,7 +136,7 @@ func (m *Monitor) listenForNotifications() {
 }
 
 func (m *Monitor) checkServerStatus(server *Server) {
-	// NewWorker() blocks if there aren't free slots for concurrency
+	// NewWorker() blocks if there aren't free slots in dialer for concurrency
 	worker, output := m.dialer.NewWorker()
 	go func() {
 		logger.Logln("Checking", server)
@@ -151,8 +146,7 @@ func (m *Monitor) checkServerStatus(server *Server) {
 		worker <- dial.NetAddressTimeout{NetAddress: dial.NetAddress{Network: server.Protocol, Address: formattedAddress}, Timeout: timeoutSeconds}
 		dialerStatus := <-output
 
-		// TODO: fatal error: concurrent map read and map write
-		m.Data[server].StatusAtTime[time.Now()] = dialerStatus.Ok
+		m.serverStatusData.SetStatusAtTimeForServer(server, time.Now(), dialerStatus.Ok)
 		if !dialerStatus.Ok {
 			logger.Logln(dialerStatus.Err)
 			logger.Logln("ERROR", server)
