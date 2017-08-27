@@ -7,7 +7,7 @@ type Initializer interface {
 
 // Notifier is used to send messages
 type Notifier interface {
-	// Notify sends text over notifier which error message if failed
+	// Notify sends text over notifier, returns error message if failed
 	Notify(text string) error
 }
 
