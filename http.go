@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"html/template"
 	"net/http"
+	"time"
 )
 
 func calculateServerUptime(statusAtTime []*statusAtTime) string {
@@ -26,9 +27,20 @@ func calculateServerUptime(statusAtTime []*statusAtTime) string {
 	return fmt.Sprintf("%.2f", sum/float64(len(statusAtTime))*100)
 }
 
+func lastStatus(statusAtTime []*statusAtTime) string {
+	lastChecked := statusAtTime[len(statusAtTime)-1]
+	difference := time.Since(lastChecked.Time)
+	status := "OK"
+	if !lastChecked.Status {
+		status = "ERR"
+	}
+	return fmt.Sprintf("%s, %.0f seconds ago", status, difference.Seconds())
+}
+
 func RunHttp(address string, monitor *Monitor) {
 	funcMap := template.FuncMap{
 		"calculateServerUptime": calculateServerUptime,
+		"lastStatus":            lastStatus,
 	}
 
 	t := template.Must(template.New("main").Funcs(funcMap).Parse(`<!DOCTYPE html>
@@ -53,7 +65,7 @@ func RunHttp(address string, monitor *Monitor) {
 				<div class="card" style="margin-top: 5px;">
 					<div class="card-body">
 						<h4 class="card-title">{{ $server.Name }}</h4>
-						<p class="card-text">{{ $server }}<br>tested {{ $len := len $statusAtTime }}{{ $len }} times</p>
+						<p class="card-text">{{ $server }}<br>tested {{ len $statusAtTime }} times<br>{{ $statusAtTime | lastStatus }}</p>
 						<a href="#" class="btn btn-primary">{{ $statusAtTime | calculateServerUptime }}%</a>
 					</div>
 				</div>

@@ -63,8 +63,7 @@ func (m *Monitor) initialize() {
 
 	for _, server := range m.config.Servers {
 		// Initialize notificationTracker
-		m.notificationTracker[server] =
-			track.NewTracker(track.NewExpBackoff(m.config.Settings.Monitor.ExponentialBackoffSeconds))
+		m.notificationTracker[server] = NewTrackerWithExpBackoff(m.config.Settings.Monitor.ExponentialBackoffSeconds)
 
 		// Set default CheckInterval and Timeout for servers who miss them
 		switch {
@@ -74,6 +73,11 @@ func (m *Monitor) initialize() {
 			server.Timeout = m.config.Settings.Monitor.Timeout
 		}
 	}
+}
+
+// NewTrackerWithExpBackoff creates TimeTracker with ExpBackoff as Delayer
+func NewTrackerWithExpBackoff(expBackoffSeconds int) *track.TimeTracker {
+	return track.NewTracker(track.NewExpBackoff(expBackoffSeconds))
 }
 
 // Run runs monitor infinitely
@@ -100,8 +104,11 @@ func (m *Monitor) RunForSeconds(runningSeconds int) {
 }
 
 func (m *Monitor) scheduleServer(s *Server) {
-	tickerSeconds := time.NewTicker(time.Duration(s.CheckInterval) * time.Second)
+	// Initial
+	m.checkerCh <- s
 
+	// Periodic
+	tickerSeconds := time.NewTicker(time.Duration(s.CheckInterval) * time.Second)
 	for range tickerSeconds.C {
 		m.checkerCh <- s
 	}
@@ -129,7 +136,7 @@ func (m *Monitor) listenForNotifications() {
 		if timeTracker.IsReady() {
 			nextDelay, nextTime := timeTracker.SetNext()
 			logger.Logln("Sending notifications for", server)
-			go m.notifiers.NotifyAll(server.String())
+			go m.notifiers.NotifyAll(fmt.Sprintf("%s (%s)", server.Name, server))
 			logger.Logln("Next available notification for", server.String(), "in", nextDelay, "at", nextTime)
 		}
 	}
@@ -147,6 +154,8 @@ func (m *Monitor) checkServerStatus(server *Server) {
 		dialerStatus := <-output
 
 		m.serverStatusData.SetStatusAtTimeForServer(server, time.Now(), dialerStatus.Ok)
+
+		// Handle error
 		if !dialerStatus.Ok {
 			logger.Logln(dialerStatus.Err)
 			logger.Logln("ERROR", server)
@@ -155,6 +164,12 @@ func (m *Monitor) checkServerStatus(server *Server) {
 			}()
 			return
 		}
+
+		// Handle success
 		logger.Logln("OK", server)
+		// Reset time tracker for server
+		if m.notificationTracker[server].HasBeenRan() {
+			m.notificationTracker[server] = NewTrackerWithExpBackoff(m.config.Settings.Monitor.ExponentialBackoffSeconds)
+		}
 	}()
 }
