@@ -57,6 +57,7 @@ func Enable() {
 	enabledFileLog = true
 }
 
+// Filter filters logs only that contain specific keyword
 func Filter(f string) {
 	filter = f
 }
