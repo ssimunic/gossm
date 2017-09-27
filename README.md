@@ -42,6 +42,64 @@ You can also use `./gossm -help` for help.
 
 JSON structure is used for configuration. Example can be found in `configs/default.json`.
 
+```json
+{
+    "settings": {
+        "notifications": {
+            "email": [
+                {
+                    "smtp": "smtp.gmail.com",
+                    "port": 587,
+                    "username": "silvio.simunic@gmail.com",
+                    "password": "...",
+                    "from": "silvio.simunic@gmail.com",
+                    "to": [
+                        "silvio.simunic@gmail.com"
+                    ]
+                }
+            ],
+            "sms": [
+                {
+                    "sms": "todo"
+                }
+            ]     
+        },
+        "monitor": {
+            "checkInterval": 15,
+            "timeout": 5,
+            "maxConnections": 50,
+            "exponentialBackoffSeconds": 5
+        }
+    },
+    "servers": [
+        {
+            "name":"Local Webserver 1",
+            "ipAddress":"192.168.20.168",
+            "port": 80,
+            "protocol": "tcp",
+            "checkInterval": 5,
+            "timeout": 5
+        },
+        {
+            "name":"Test server 1",
+            "ipAddress":"162.243.10.151",
+            "port": 80,
+            "protocol": "tcp",
+            "checkInterval": 5,
+            "timeout": 5
+        },
+        {
+            "name":"Test server 2",
+            "ipAddress":"162.243.10.151",
+            "port": 8080,
+            "protocol": "tcp",
+            "checkInterval": 5,
+            "timeout": 5
+        }
+    ]
+}
+```
+
 ### Global
 
 `checkInterval` check interval for each server in seconds
