@@ -13,11 +13,17 @@
                     ]
                 }
             ],
+            "telegram": [
+                {
+                    "botToken": "123456:ABC-DEF1234...",
+                    "chatId": "12341234"
+                }
+            ],
             "sms": [
                 {
                     "sms": "todo"
                 }
-            ]     
+            ]
         },
         "monitor": {
             "checkInterval": 15,

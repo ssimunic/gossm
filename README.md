@@ -58,11 +58,17 @@ JSON structure is used for configuration. Example can be found in `configs/defau
                     ]
                 }
             ],
+            "telegram": [
+                {
+                    "botToken": "123456:ABC-DEF1234...",
+                    "chatId": "12341234"
+                }
+            ],
             "sms": [
                 {
                     "sms": "todo"
                 }
-            ]     
+            ]
         },
         "monitor": {
             "checkInterval": 15,
@@ -143,6 +149,11 @@ There can be multiple email or sms notification settings.
 `from` email that notifications will be sent from
 
 `to` array of recipients 
+
+#### Telegram
+
+`botToken` Telegram Bot token obtained via the BotFather.
+`chatId` ChatID of the user to message (Can also be a group id).
 
 #### SMS
 
