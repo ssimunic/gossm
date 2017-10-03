@@ -19,9 +19,12 @@ func (s *TelegramNotifier) Notify(text string) error {
 	values := url.Values{}
 	values.Add("chat_id", s.Settings.ChatID)
 	values.Add("parse_mode", "markdown")
-	values.Add("text", "*[Error]*_GOSSM_\nServer "+text+" not reached.")
+	values.Add("text", "*[Error]* _GOSSM_\nServer "+text+" not reached.")
 	_, err := http.PostForm(fmt.Sprintf("https://api.telegram.org/bot%s/sendMessage", s.Settings.BotToken), values)
 	return err
+}
+
+func (e *TelegramNotifier) Initialize() {
 }
 
 func (ts *TelegramSettings) Validate() error {
