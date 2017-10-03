@@ -15,7 +15,11 @@ gossm performs checks if servers can be reached every *t* seconds and notifies w
 
 Run from terminal:
 
-`go build github.com/ssimunic/gossm/cmd/gossm && ./gossm -config configs/myconfig.json`
+```
+go get github.com/ssimunic/gossm/cmd/gossm
+go build github.com/ssimunic/gossm/cmd/gossm
+./gossm -config configs/myconfig.json
+```
 
 This will build and run program with configuration file `configs/myconfig.json`.
 
