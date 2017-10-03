@@ -19,6 +19,7 @@ type MonitorSettings struct {
 type NotificationSettings struct {
 	Email []*notify.EmailSettings `json:"email"`
 	Sms   []*notify.SmsSettings   `json:"sms"`
+	Slack []*notify.SlackSettings `json:"slack"`
 }
 
 func (n *NotificationSettings) GetNotifiers() (notifiers notify.Notifiers) {
@@ -29,6 +30,10 @@ func (n *NotificationSettings) GetNotifiers() (notifiers notify.Notifiers) {
 	for _, sms := range n.Sms {
 		smsNotifier := &notify.SmsNotifier{Settings: sms}
 		notifiers = append(notifiers, smsNotifier)
+	}
+	for _, slack := range n.Slack {
+		slackNotifier := &notify.SlackNotifier{Settings: slack}
+		notifiers = append(notifiers, slackNotifier)
 	}
 	return
 }
