@@ -28,6 +28,9 @@ func calculateServerUptime(statusAtTime []*statusAtTime) string {
 }
 
 func lastStatus(statusAtTime []*statusAtTime) string {
+	if len(statusAtTime) == 0 {
+		return "Not yet checked"
+	}
 	lastChecked := statusAtTime[len(statusAtTime)-1]
 	difference := time.Since(lastChecked.Time)
 	status := "OK"
