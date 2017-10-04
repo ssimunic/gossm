@@ -15,7 +15,7 @@ gossm performs checks if servers can be reached every *t* seconds and notifies w
 
 Run from terminal:
 
-```
+```bash
 go get github.com/ssimunic/gossm/cmd/gossm
 go build github.com/ssimunic/gossm/cmd/gossm
 ./gossm -config configs/myconfig.json
@@ -41,6 +41,36 @@ Example: `./gossm -config configs/myconfig.json -logfilter tcp -http :1337`. Web
 
 
 You can also use `./gossm -help` for help.
+
+## Docker
+
+An example Dockerfile is located in the project root. Currently there is no offical build on Docker Hub, but that can be addressed if more people show interest.
+
+### docker-compose
+
+An example docker-compose is also found in our project root.
+
+```yaml
+version: "2"
+
+services:
+  gossm:
+    build: ./
+    ports:
+      - "8067:8080"
+    volumes:
+      - ./configs:/configs
+      - ./logs:/var/log/gossum
+```
+
+Getting started with `docker-compose` is as simple as having Docker and Docker Compose installed on your machine, and typing:
+
+```bash
+docker-compose build
+docker-compose up
+```
+
+Please note that the example config found at `configs/default.json` is invalid JSON, so we will need to fix that before bringing up the container.
 
 ## Configuration
 

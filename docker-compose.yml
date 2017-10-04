@@ -1,0 +1,10 @@
+version: "2"
+
+services:
+  gossm:
+    build: ./
+    ports:
+      - "8067:8080"
+    volumes:
+      - ./configs:/configs
+      - ./logs:/var/log/gossum
