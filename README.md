@@ -193,11 +193,13 @@ There can be multiple email or sms notification settings.
 #### Telegram
 
 `botToken` Telegram Bot token obtained via the BotFather.
+
 `chatId` ChatID of the user to message (Can also be a group id).
 
 #### Pushover
 
 `appToken` your Pushover application's API token
+
 `userKey` the user/group key of your Pushover user
 
 #### SMS
