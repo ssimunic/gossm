@@ -64,6 +64,12 @@ JSON structure is used for configuration. Example can be found in `configs/defau
                     "chatId": "12341234"
                 }
             ],
+            "pushover": [
+                {
+                    "userKey": "user_key",
+                    "appToken": "app_token"
+                }
+            ],
             "sms": [
                 {
                     "sms": "todo"
@@ -154,6 +160,11 @@ There can be multiple email or sms notification settings.
 
 `botToken` Telegram Bot token obtained via the BotFather.
 `chatId` ChatID of the user to message (Can also be a group id).
+
+#### Pushover
+
+`appToken` your Pushover application's API token
+`userKey` the user/group key of your Pushover user
 
 #### SMS
 

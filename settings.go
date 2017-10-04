@@ -20,6 +20,7 @@ type NotificationSettings struct {
 	Email    []*notify.EmailSettings    `json:"email"`
 	Sms      []*notify.SmsSettings      `json:"sms"`
 	Telegram []*notify.TelegramSettings `json:"telegram"`
+	Pushover []*notify.PushoverSettings `json:"pushover"`
 }
 
 func (n *NotificationSettings) GetNotifiers() (notifiers notify.Notifiers) {
@@ -35,6 +36,10 @@ func (n *NotificationSettings) GetNotifiers() (notifiers notify.Notifiers) {
 	for _, telegram := range n.Telegram {
 		telegramNotifier := &notify.TelegramNotifier{Settings: telegram}
 		notifiers = append(notifiers, telegramNotifier)
+	}
+	for _, pushover := range n.Pushover {
+		pushoverNotifier := &notify.PushoverNotifier{Settings: pushover}
+		notifiers = append(notifiers, pushoverNotifier)
 	}
 	return
 }
