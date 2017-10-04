@@ -19,6 +19,12 @@
                     "chatId": "12341234"
                 }
             ],
+            "pushover": [
+                {
+                    "userKey": "user_key",
+                    "appToken": "app_token"
+                }
+            ],
             "sms": [
                 {
                     "sms": "todo"
