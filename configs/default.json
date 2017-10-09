@@ -25,6 +25,12 @@
                     "appToken": "app_token"
                 }
             ],
+            "webhook": [
+                {
+                    "url": "<url>",
+                    "method": "GET"
+                }
+            ],
             "sms": [
                 {
                     "sms": "todo"
