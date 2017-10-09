@@ -202,6 +202,14 @@ There can be multiple email or sms notification settings.
 
 `userKey` the user/group key of your Pushover user
 
+#### Webhook
+
+`url` url to make request to
+
+`method` method to use (`GET` or `POST`)
+
+Server information will be stored in `server` parameter.
+
 #### SMS
 
 TODO
