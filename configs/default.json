@@ -27,7 +27,7 @@
             ],
             "webhook": [
                 {
-                    "url": "<url>",
+                    "url": "url",
                     "method": "GET"
                 }
             ],

@@ -104,6 +104,12 @@ JSON structure is used for configuration. Example can be found in `configs/defau
                     "appToken": "app_token"
                 }
             ],
+            "webhook": [
+                {
+                    "url": "url",
+                    "method": "GET"
+                }
+            ],
             "sms": [
                 {
                     "sms": "todo"
