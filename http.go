@@ -1,6 +1,7 @@
 package gossm
 
 import (
+	"encoding/json"
 	"fmt"
 	"html/template"
 	"net/http"
@@ -81,6 +82,22 @@ func RunHttp(address string, monitor *Monitor) {
 
 	http.HandleFunc("/", func(rw http.ResponseWriter, req *http.Request) {
 		t.Execute(rw, monitor.serverStatusData.GetServerStatus())
+	})
+
+	http.HandleFunc("/json", func(rw http.ResponseWriter, req *http.Request) {
+		rw.Header().Set("Content-Type", "application/json")
+
+		jsonBytes, err := json.Marshal(monitor.serverStatusData.GetServerStatus())
+		if err != nil {
+			jsonError, _ := json.Marshal(struct {
+				Message string `json:"message"`
+			}{Message: "Unable to format JSON."})
+
+			rw.Write(jsonError)
+			return
+		}
+
+		rw.Write(jsonBytes)
 	})
 
 	http.ListenAndServe(address, nil)

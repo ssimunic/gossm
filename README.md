@@ -219,3 +219,26 @@ Server information will be stored in `server` parameter.
 #### SMS
 
 TODO
+
+### API
+
+JSON of current status is available at `/json/` endpoint.
+
+Example is given below.
+
+```json
+{
+    "tcp 162.243.10.151:80": [
+        {
+            "time": "2018-03-06T19:57:33.633712261+01:00",
+            "online": true
+        }
+    ],
+    "tcp 176.32.98.166:80": [
+        {
+            "time": "2018-03-06T19:57:33.650150286+01:00",
+            "online": true
+        }
+    ]
+}
+```
