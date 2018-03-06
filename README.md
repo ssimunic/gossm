@@ -220,7 +220,7 @@ Server information will be stored in `server` parameter.
 
 TODO
 
-### API
+## API
 
 JSON of current status is available at `/json/` endpoint.
 
