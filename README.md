@@ -222,7 +222,7 @@ TODO
 
 ## API
 
-JSON of current status is available at `/json/` endpoint.
+JSON of current status is available at `/json` endpoint.
 
 Example is given below.
 
