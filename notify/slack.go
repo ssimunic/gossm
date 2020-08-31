@@ -18,7 +18,7 @@ type SlackNotifier struct {
 }
 
 func (s *SlackNotifier) Notify(text string) error {
-	payload := map[string]interface{}{"channel": s.Settings.ChannelID, "text": "Hello.. :tada:"}
+	payload := map[string]interface{}{"channel": s.Settings.ChannelID, "text": "GOSSM Notification: " + text + " not reached"}
 	bytes, _ := json.Marshal(payload)
 
 	client := &http.Client{}
