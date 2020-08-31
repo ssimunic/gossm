@@ -98,6 +98,12 @@ JSON structure is used for configuration. Example can be found in `configs/defau
                     "chatId": "12341234"
                 }
             ],
+            "slack": [
+                {
+                    "bearerToken": "bearerToken",
+                    "channelId": "channelId"
+                }
+            ],
             "pushover": [
                 {
                     "userKey": "user_key",
@@ -201,6 +207,12 @@ There can be multiple email or sms notification settings.
 `botToken` Telegram Bot token obtained via the BotFather.
 
 `chatId` ChatID of the user to message (Can also be a group id).
+
+#### Slack
+
+`bearerToken` Bearer auth token for Slack app.
+
+`channelId` Slack channel ID.
 
 #### Pushover
 

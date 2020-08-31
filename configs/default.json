@@ -25,6 +25,12 @@
                     "appToken": "app_token"
                 }
             ],
+            "slack": [
+                {
+                    "bearerToken": "bearerToken",
+                    "channelId": "channelId"
+                }
+            ],
             "webhook": [
                 {
                     "url": "url",

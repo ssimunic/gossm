@@ -43,9 +43,25 @@ func (ns *NotificationSettings) Validate() error {
 		if err := sms.Validate(); err != nil {
 			return fmt.Errorf("invalid sms settings: %v", err)
 		}
-	for _, sms := range ns.Slack {
-		if err := sms.Validate(); err != nil {
-				return fmt.Errorf("invalid slack settings: %v", err)
+	}
+	for _, telegram := range ns.Telegram {
+		if err := telegram.Validate(); err != nil {
+			return fmt.Errorf("invalid telegram settings: %v", err)
+		}
+	}
+	for _, slack := range ns.Slack {
+		if err := slack.Validate(); err != nil {
+			return fmt.Errorf("invalid slack settings: %v", err)
+		}
+	}
+	for _, pushover := range ns.Pushover {
+		if err := pushover.Validate(); err != nil {
+			return fmt.Errorf("invalid pushover settings: %v", err)
+		}
+	}
+	for _, webhook := range ns.Webhook {
+		if err := webhook.Validate(); err != nil {
+			return fmt.Errorf("invalid webhook settings: %v", err)
 		}
 	}
 	return nil
