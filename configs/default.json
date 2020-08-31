@@ -13,11 +13,29 @@
                     ]
                 }
             ],
+            "telegram": [
+                {
+                    "botToken": "123456:ABC-DEF1234...",
+                    "chatId": "12341234"
+                }
+            ],
+            "pushover": [
+                {
+                    "userKey": "user_key",
+                    "appToken": "app_token"
+                }
+            ],
+            "webhook": [
+                {
+                    "url": "url",
+                    "method": "GET"
+                }
+            ],
             "sms": [
                 {
                     "sms": "todo"
                 }
-            ]     
+            ]
         },
         "monitor": {
             "checkInterval": 15,
