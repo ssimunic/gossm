@@ -43,6 +43,10 @@ func (ns *NotificationSettings) Validate() error {
 		if err := sms.Validate(); err != nil {
 			return fmt.Errorf("invalid sms settings: %v", err)
 		}
+	for _, sms := range ns.Slack {
+		if err := sms.Validate(); err != nil {
+				return fmt.Errorf("invalid slack settings: %v", err)
+		}
 	}
 	return nil
 }

@@ -21,6 +21,7 @@ type NotificationSettings struct {
 	Sms      []*notify.SmsSettings      `json:"sms"`
 	Telegram []*notify.TelegramSettings `json:"telegram"`
 	Pushover []*notify.PushoverSettings `json:"pushover"`
+	Slack    []*notify.SlackSettings    `json:"slack"`
 	Webhook  []*notify.WebhookSettings  `json:"webhook"`
 }
 
@@ -33,7 +34,6 @@ func (n *NotificationSettings) GetNotifiers() (notifiers notify.Notifiers) {
 		smsNotifier := &notify.SmsNotifier{Settings: sms}
 		notifiers = append(notifiers, smsNotifier)
 	}
-
 	for _, telegram := range n.Telegram {
 		telegramNotifier := &notify.TelegramNotifier{Settings: telegram}
 		notifiers = append(notifiers, telegramNotifier)
@@ -41,6 +41,10 @@ func (n *NotificationSettings) GetNotifiers() (notifiers notify.Notifiers) {
 	for _, pushover := range n.Pushover {
 		pushoverNotifier := &notify.PushoverNotifier{Settings: pushover}
 		notifiers = append(notifiers, pushoverNotifier)
+	}
+	for _, slack := range n.Slack {
+		slackNotifier := &notify.SlackNotifier{Settings: slack}
+		notifiers = append(notifiers, slackNotifier)
 	}
 	for _, webhook := range n.Webhook {
 		webhookNotifier := &notify.WebhookNotifier{Settings: webhook}
